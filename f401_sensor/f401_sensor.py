@@ -45,6 +45,12 @@ class HTU21():
 		pyb.delay(100)
 		i2c.readfrom_into(htu21_addr, resp)
 		return ((resp[0] << 8 | resp[1]))
+	
+	def convert_hum(self, raw_data):
+		raw_data = raw_data & 0xFFFFFFFFC
+		humidity = -6 +125 * (raw_data / pow(2,16))
+		return humidity
+			
 def main():
 	i2c_devices = i2c.scan()
 	
@@ -65,6 +71,11 @@ def main():
 	htu21 = HTU21()
 	htu21.reset()
 	print(hex(htu21.get_user_reg()))
-	print(htu21.get_hum_raw())	
+	while True:
+		hum_raw = htu21.get_hum_raw()
+		hum = htu21.convert_hum(hum_raw)
+		print("raw humidity: %f" %hum_raw)
+		print("humidity %f" %hum)
+		pyb.delay(2000)	
 		
 main()
